@@ -3,53 +3,95 @@ import Loading from '../loading/Loading';
 import './chat.css';
 import { useRef, useEffect } from 'react';
 import { useChat } from '../../hooks/useChat';
+import { calculateTotalPrice } from '../../utils/order';
 
 const Chat = () => {
-    const { messages, getAnswer, isLoading, error, clearHistory } = useChat();
+    const {
+        messages,
+        getAnswer,
+        isLoading,
+        error,
+        clearHistory,
+        createOrderPreview,
+        order,
+        orderError,
+    } = useChat();
     const inputRef = useRef();
-    
+
     // Hanterar scrollningen på sidan vid nya meddelanden
     const messagesRef = useRef(null);
     useEffect(() => {
         if (messagesRef.current) {
-            messagesRef.current.scrollTop =
-                messagesRef.current.scrollHeight;
+            messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
         }
-    }, [messages, isLoading]);  
+    }, [messages, isLoading]);
 
-    const handleSubmit = async (event) => {
-        event.preventDefault();
+    const handleSubmit = async (e) => {
+        e.preventDefault();
         const userInput = inputRef.current.value;
         inputRef.current.value = '';
         getAnswer(userInput);
-    }
+    };
+
+    const handleOrder = (e) => {
+        e.preventDefault();
+        const userInput = inputRef.current.value;
+        inputRef.current.value = '';
+        createOrderPreview(userInput);
+    };
+
+    const items = order?.items.map(({ name, quantity }) => {
+        return (
+            <li className="order__item" key={name}>
+                {name} {quantity > 1 && `x ${quantity}`}
+            </li>
+        );
+    });
 
     const messageComponents = messages.map((message, index) => {
-        const role = message.getType() === 'human'
-            ? 'user'
-            : 'assistant';
-        
-        return <Message 
-            key={ index }
-            content={ message.content }
-            role={ role }
-        />
+        const role = message.getType() === 'human' ? 'user' : 'assistant';
+
+        return <Message key={index} content={message.content} role={role} />;
     });
 
     return (
         <main className="chat">
-            <section className="chat__messages" ref={ messagesRef }>
-                { messageComponents }
-                { isLoading && <Loading /> }
-                { error && <p>{ error }</p> }
+            {order && (
+                <div className="order">
+                    <h1 className="order__title">BESTÄLLNING</h1>
+                    <ul className="order__list">{items}</ul>
+                    <p className="order__price">
+                        Pris: {calculateTotalPrice(order.items)}kr
+                    </p>
+                </div>
+            )}
+
+            <section className="chat__messages" ref={messagesRef}>
+                {messageComponents}
+                {isLoading && <Loading />}
+                {error && <p>{error}</p>}
             </section>
-            <form className="chat__form" onSubmit={ handleSubmit }>
-                <input type="text" className="chat__input" ref={ inputRef } />
+
+            <form className="chat__form" onSubmit={handleSubmit}>
+                <input type="text" className="chat__input" ref={inputRef} />
                 <button className="chat__submit">Skicka</button>
-                <button type="button" className="chat__submit" onClick={ clearHistory } >Clear</button>
+                <button
+                    type="button"
+                    className="chat__submit"
+                    onClick={clearHistory}
+                >
+                    Clear
+                </button>
+                <button
+                    type="button"
+                    className="chat__submit"
+                    onClick={handleOrder}
+                >
+                    Lägg beställning
+                </button>
             </form>
         </main>
-    )
-}
+    );
+};
 
 export default Chat;

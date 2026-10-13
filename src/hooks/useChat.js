@@ -6,6 +6,8 @@ import {
     SystemMessage,
 } from '@langchain/core/messages';
 import { messagePrompt } from '../langchain/prompts';
+import menu from '../data/menu';
+import { interpretOrder } from '../langchain/orders';
 
 export const useChat = () => {
     // messages innehåller det vi hämtar från localStorage
@@ -28,6 +30,8 @@ export const useChat = () => {
     });
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(false);
+    const [order, setOrder] = useState(null);
+    const [orderError, setOrderError] = useState(null);
 
     // useEffect uppdaterar localStorage när nya meddelanden läggs till
     useEffect(() => {
@@ -51,6 +55,7 @@ export const useChat = () => {
 
         try {
             const answer = await chain.invoke({
+                menu,
                 history: messages,
                 question: userMessage,
             });
@@ -63,6 +68,19 @@ export const useChat = () => {
             setError(error.message);
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    // Funktion: createOrderPreview
+    const createOrderPreview = async (question) => {
+        setOrder(null);
+        setOrderError(null);
+
+        try {
+            const answer = await interpretOrder(question);
+            setOrder(answer);
+        } catch (error) {
+            setOrderError(error.message);
         }
     };
 
@@ -79,5 +97,9 @@ export const useChat = () => {
         isLoading,
         error,
         clearHistory,
+
+        createOrderPreview,
+        order,
+        orderError,
     };
 };
