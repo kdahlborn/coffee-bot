@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
-import { llm } from '../langchain/llm';
+
 import {
     HumanMessage,
     AIMessage,
     SystemMessage,
 } from '@langchain/core/messages';
-import { messagePrompt } from '../langchain/prompts';
-import menu from '../data/menu';
 import { interpretOrder } from '../langchain/orders';
+import { invokeAssistant } from '../langchain/assistant';
 
 export const useChat = () => {
     // messages innehåller det vi hämtar från localStorage
@@ -46,7 +45,7 @@ export const useChat = () => {
     // Funktion: getAnswer
     const getAnswer = async (question) => {
         const userMessage = new HumanMessage(question);
-        const chain = messagePrompt.pipe(llm);
+        // const chain = messagePrompt.pipe(llm);
 
         const history = [...messages, userMessage];
         setMessages(history);
@@ -54,15 +53,10 @@ export const useChat = () => {
         setError(false);
 
         try {
-            const answer = await chain.invoke({
-                menu,
-                history: messages,
-                question: userMessage,
-            });
-
-            console.log(answer);
+            const answer = await invokeAssistant(messages, question);
 
             const aiMessage = new AIMessage(answer.content);
+
             setMessages([...history, aiMessage]);
         } catch (error) {
             setError(error.message);
