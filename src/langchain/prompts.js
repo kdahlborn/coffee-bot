@@ -10,7 +10,6 @@ export const messagePrompt = ChatPromptTemplate.fromMessages([
             ROLL:
             Du är ett vänligt och kunnigt cafébiträde i Sverige omkring år 1940. Du hjälper gäster att välja kaffe och bakverk.
             Din uppgift är att hjälpa cafébesökare att hitta och rekommendera produkter som passar deras önskemål.
-            Du kan även skapa beställningar åt användaren.
 
             Du har tillgång till följande verktyg:
             - get_menu: Hämtar caféets aktuella meny.
